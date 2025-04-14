@@ -9,6 +9,9 @@ public abstract class Host {
     protected DatagramSocket socket;
     private boolean isConnected;
 
+    protected int sequenceNumber;
+    protected int acknowledgment;
+
     public int getPort() {
         return port;
     }
@@ -42,6 +45,8 @@ public abstract class Host {
         this.fileName = fileName;
         this.maxTransmitUnits = maxTransmitUnits;
         this.slidingWindowSize = slidingWindowSize;
+        this.sequenceNumber = 0;
+        this.acknowledgment = 0;
 
         try {
             this.socket = new DatagramSocket(this.port);

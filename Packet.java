@@ -3,6 +3,9 @@ import java.nio.ByteOrder;
 
 public class Packet {
 
+    // SeqNo (4) + Ack (4) + Time (8) + Len (4) + 0s (2) + Checksum (2)
+    public static final int HEADER_SIZE = 4 + 4 + 8 + 4 + 2 + 2;
+
     private int sequenceNumber;
     private int acknowledgment;
     private long timestamp;
@@ -12,6 +15,42 @@ public class Packet {
     private boolean ACK;
     private short checksum;
     private byte[] data;
+
+    public int getSequenceNumber() {
+        return sequenceNumber;
+    }
+
+    public int getAcknowledgment() {
+        return acknowledgment;
+    }
+
+    public long getTimestamp() {
+        return timestamp;
+    }
+
+    public int getLength() {
+        return length;
+    }
+
+    public boolean isSYN() {
+        return SYN;
+    }
+
+    public boolean isFIN() {
+        return FIN;
+    }
+
+    public boolean isACK() {
+        return ACK;
+    }
+
+    public short getChecksum() {
+        return checksum;
+    }
+
+    public byte[] getData() {
+        return data;
+    }
 
     public Packet(int sequenceNumber, int acknowledgment, long timestamp, int length, boolean SYN, boolean FIN,
             boolean ACK, byte[] data) {
@@ -49,8 +88,7 @@ public class Packet {
     }
 
     public byte[] toBytes() {
-        int headerSide = 4 + 4 + 8 + 4 + 4;
-        int totalSize = headerSide + (this.data != null ? this.data.length : 0);
+        int totalSize = HEADER_SIZE + (this.data != null ? this.data.length : 0);
 
         ByteBuffer buffer = ByteBuffer.allocate(totalSize);
         buffer.order(ByteOrder.BIG_ENDIAN);

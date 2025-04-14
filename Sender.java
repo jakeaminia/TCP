@@ -1,4 +1,3 @@
-import java.io.IOException;
 import java.net.DatagramPacket;
 import java.net.InetAddress;
 
@@ -30,24 +29,37 @@ public class Sender extends Host {
 
     }
 
+    /**
+     * Conducts the sender side of the TCP 3-way handshake
+     * 
+     * @return Success of connection
+     */
     public boolean connect() {
         if (this.isConnected()) {
             return true;
         }
-
-        this.socket.connect(this.remoteIP, this.remotePort);
-
-        // 3-way handshake
-        // Send SYN 0
-        byte[] synBytes = syn(0, 0).toBytes();
         try {
-            this.socket.send(new DatagramPacket(synBytes, synBytes.length, this.remoteIP, this.remotePort));
-        } catch (IOException e) {
+
+            this.socket.connect(this.remoteIP, this.remotePort);
+
+            // Send SYN 0
+            byte[] synBytes = syn(0, 0).toBytes();
+            this.socket.send(new DatagramPacket(synBytes, Packet.HEADER_SIZE, this.remoteIP, this.remotePort));
+
+            // Wait for ACK 1, SYN 0
+            DatagramPacket synAckDatagram = new DatagramPacket(new byte[Packet.HEADER_SIZE], Packet.HEADER_SIZE);
+            this.socket.receive(synAckDatagram);
+            Packet synAck = new Packet(synAckDatagram.getData());
+
+            // Send ACK 1
+            byte[] ackBytes = ack(synAck.getSequenceNumber() + 1).toBytes();
+            this.socket.send(new DatagramPacket(ackBytes, Packet.HEADER_SIZE, this.remoteIP, this.remotePort));
+
+        } catch (Exception e) {
+            this.socket.disconnect();
             e.printStackTrace();
             return false;
         }
-        // Wait for ACK 1, SYN 0
-        // Send ACK 1
 
         this.setConnected(true);
         return true;
