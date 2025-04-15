@@ -28,6 +28,7 @@ public class Sender extends Host {
         if (this.isConnected()) {
             return true;
         }
+
         try {
 
             this.socket.connect(this.remoteIP, this.remotePort);
@@ -37,8 +38,7 @@ public class Sender extends Host {
             this.socket.send(new DatagramPacket(synBytes, Packet.HEADER_SIZE, this.remoteIP, this.remotePort));
 
             // Wait for ACK 1, SYN 0
-            DatagramPacket synAckDatagram = new DatagramPacket(new byte[Packet.HEADER_SIZE], Packet.HEADER_SIZE);
-            this.receive(synAckDatagram);
+            this.receive(Packet.HEADER_SIZE);
 
             // Send ACK 1
             byte[] ackBytes = this.ack().toBytes();

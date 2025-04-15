@@ -6,10 +6,20 @@ public class Receiver extends Host {
         super(port, maxTransmitUnits, slidingWindowSize, fileName);
     }
 
-    public boolean listen() {
+    public void listen() {
+
+    }
+
+    public boolean connect() {
+        if (this.isConnected()) {
+            return true;
+        }
+
         try {
             // Wait for SYN 0
             this.receive(Packet.HEADER_SIZE);
+
+            this.socket.connect(this.remoteIP, this.remotePort);
 
             // Send SYN 0 ACK 1
             byte[] synAckBytes = this.syn().toBytes();
@@ -24,6 +34,7 @@ public class Receiver extends Host {
             return false;
         }
 
+        this.setConnected(true);
         return true;
     }
 }
