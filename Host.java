@@ -1,16 +1,29 @@
+import java.io.IOException;
+import java.net.DatagramPacket;
 import java.net.DatagramSocket;
+import java.net.InetAddress;
 
 public abstract class Host {
 
-    private int port;
-    private int maxTransmitUnits;
-    private int slidingWindowSize;
-    private String fileName;
+    protected int port;
+    protected int maxTransmitUnits;
+    protected int slidingWindowSize;
+    protected String fileName;
     protected DatagramSocket socket;
-    private boolean isConnected;
+    protected boolean isConnected;
+    protected int remotePort;
+    protected InetAddress remoteIP;
 
     protected int sequenceNumber;
     protected int acknowledgment;
+
+    public InetAddress getRemoteIP() {
+        return remoteIP;
+    }
+
+    public int getRemotePort() {
+        return remotePort;
+    }
 
     public int getPort() {
         return port;
@@ -56,15 +69,29 @@ public abstract class Host {
 
     }
 
-    public static Packet syn(int sequenceNumber, int acknowledgment) {
-        return new Packet(sequenceNumber, acknowledgment, System.nanoTime(), 0, true, false, acknowledgment != 0, null);
+    public Packet syn() {
+        Packet packet = new Packet(this.sequenceNumber, this.acknowledgment, System.nanoTime(), 0, true, false,
+                acknowledgment != 0, null);
+        this.sequenceNumber += 1;
+        return packet;
     }
 
-    public static Packet fin(int sequenceNumber, int acknowledgment) {
-        return new Packet(sequenceNumber, acknowledgment, System.nanoTime(), 0, false, true, acknowledgment != 0, null);
+    public Packet fin() {
+        return new Packet(this.sequenceNumber, this.acknowledgment, System.nanoTime(), 0, false, true,
+                acknowledgment != 0, null);
     }
 
-    public static Packet ack(int acknowledgment) {
-        return new Packet(0, acknowledgment, System.nanoTime(), 0, false, false, true, null);
+    public Packet ack() {
+        return new Packet(0, this.acknowledgment, System.nanoTime(), 0, false, false, true, null);
+    }
+
+    public Packet receive(int length) throws IOException {
+        DatagramPacket datagram = new DatagramPacket(new byte[length], length);
+        this.socket.receive(datagram);
+        Packet result = new Packet(datagram.getData());
+        this.remoteIP = datagram.getAddress();
+        this.remotePort = datagram.getPort();
+        this.acknowledgment = result.getSequenceNumber() + result.getLength() + 1; // TODO: Use buffer
+        return result;
     }
 }
