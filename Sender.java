@@ -34,15 +34,13 @@ public class Sender extends Host {
             this.socket.connect(this.remoteIP, this.remotePort);
 
             // Send SYN 0
-            byte[] synBytes = this.syn().toBytes();
-            this.socket.send(new DatagramPacket(synBytes, Packet.HEADER_SIZE, this.remoteIP, this.remotePort));
+            this.socket.send(new DatagramPacket(syn().toBytes(), Packet.HEADER_SIZE, this.remoteIP, this.remotePort));
 
             // Wait for ACK 1, SYN 0
             this.receive(Packet.HEADER_SIZE);
 
             // Send ACK 1
-            byte[] ackBytes = this.ack().toBytes();
-            this.socket.send(new DatagramPacket(ackBytes, Packet.HEADER_SIZE, this.remoteIP, this.remotePort));
+            this.socket.send(new DatagramPacket(ack().toBytes(), Packet.HEADER_SIZE, this.remoteIP, this.remotePort));
 
         } catch (Exception e) {
             this.socket.disconnect();
@@ -53,4 +51,34 @@ public class Sender extends Host {
         this.setConnected(true);
         return true;
     }
+
+    public boolean disconnect() {
+        if (!this.isConnected) {
+            return true;
+        }
+
+        try {
+            // Send FIN
+            this.socket.send(new DatagramPacket(fin().toBytes(), Packet.HEADER_SIZE, this.remoteIP, this.remotePort));
+
+            // Wait for ACK
+            this.receive(Packet.HEADER_SIZE);
+
+            // Wait for FIN
+            this.receive(Packet.HEADER_SIZE);
+
+            // Send ACK
+            this.socket.send(new DatagramPacket(ack().toBytes(), Packet.HEADER_SIZE, this.remoteIP, this.remotePort));
+
+            // Disconnect
+            this.socket.disconnect();
+            this.setConnected(false);
+            return true;
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            return false;
+        }
+    }
+
 }
