@@ -1,6 +1,14 @@
 import java.net.DatagramPacket;
+import java.util.Map;
+import java.util.TreeMap;
 
 public class Receiver extends Host {
+
+    private int expectedSeq = 1;
+    private int bytesReceived = 0;
+    private int outOfOrderCount = 0;
+    private int badChecksumCount = 0;
+    private Map<Integer, Packet> buffer = new TreeMap<>();
 
     public Receiver(int port, int maxTransmitUnits, int slidingWindowSize, String fileName) {
         super(port, maxTransmitUnits, slidingWindowSize, fileName);

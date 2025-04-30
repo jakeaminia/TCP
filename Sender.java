@@ -18,7 +18,6 @@ public class Sender extends Host {
         }
     }
 
-    @Override
     public void run() {
         this.loadFile(); // Load input file to byte array
 

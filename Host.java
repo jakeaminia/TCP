@@ -115,6 +115,12 @@ public abstract class Host {
         return new Packet(0, this.acknowledgment, System.nanoTime(), 0, false, false, true, null);
     }
 
+    public void send(Packet packet) throws IOException {
+        byte[] bytes = packet.toBytes();
+        DatagramPacket dp = new DatagramPacket(bytes, bytes.length, this.remoteIP, this.remotePort);
+        this.socket.send(dp);
+    }
+
     public Packet receive(int length) throws IOException {
         DatagramPacket datagram = new DatagramPacket(new byte[length], length);
         this.socket.receive(datagram);
