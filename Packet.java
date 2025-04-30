@@ -132,4 +132,16 @@ public class Packet {
 
         return (short) ~(sum & 0xFFFF);
     }
+
+    public boolean isValidChecksum() {
+        // Temporarily set checksum field to 0 and recompute
+        byte[] packetBytes = this.toBytes();
+        
+        // Reset checksum bytes to zero for validation
+        packetBytes[22] = 0;
+        packetBytes[23] = 0;
+    
+        short computed = computeChecksum(packetBytes);
+        return this.checksum == computed;
+    }
 }

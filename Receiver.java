@@ -7,7 +7,53 @@ public class Receiver extends Host {
     }
 
     public void listen() {
-
+        while (true) {
+            try {
+                Packet packet = this.receive(this.maxTransmitUnits + Packet.HEADER_SIZE);
+    
+                // End on FIN
+                if (packet.isFIN()) {
+                    this.send(ack());
+                    this.setConnected(false);
+                    break;
+                }
+    
+                // Check checksum
+                if (!packet.isValidChecksum()) {
+                    badChecksumCount++;
+                    continue;
+                }
+    
+                // Out-of-order packet (store in buffer)
+                if (packet.getSequenceNumber() > expectedSeq) {
+                    buffer.put(packet.getSequenceNumber(), packet);
+                    outOfOrderCount++;
+                }
+    
+                // In-order packet
+                else if (packet.getSequenceNumber() == expectedSeq) {
+                    this.write(packet.getData());
+                    bytesReceived += packet.getLength();
+                    expectedSeq += packet.getLength();
+    
+                    // Try to flush any buffered packets now in order
+                    while (buffer.containsKey(expectedSeq)) {
+                        Packet next = buffer.remove(expectedSeq);
+                        this.write(next.getData());
+                        bytesReceived += next.getLength();
+                        expectedSeq += next.getLength();
+                    }
+                }
+    
+                // ACK everything up to expectedSeq
+                this.send(new Packet(0, expectedSeq, packet.getTimestamp(), 0, false, false, true, null));
+    
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
+    
+        printStats();
     }
 
     public boolean connect() {
@@ -63,5 +109,11 @@ public class Receiver extends Host {
             e.printStackTrace();
             return false;
         }
+    }
+
+    private void printStats() {
+        System.out.println("Data received: " + bytesReceived + " bytes");
+        System.out.println("Out-of-order packets discarded: " + outOfOrderCount);
+        System.out.println("Packets with bad checksum: " + badChecksumCount);
     }
 }

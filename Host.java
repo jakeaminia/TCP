@@ -17,6 +17,9 @@ public abstract class Host {
     protected int sequenceNumber;
     protected int acknowledgment;
 
+    protected byte[] file;
+    protected FileOutputStream output;
+
     public InetAddress getRemoteIP() {
         return remoteIP;
     }
@@ -51,6 +54,30 @@ public abstract class Host {
 
     public void setConnected(boolean isConnected) {
         this.isConnected = isConnected;
+    }
+
+    protected void loadFile() {
+        try {
+            this.file = Files.readAllBytes(Paths.get(fileName));
+        } catch (IOException e) {
+            System.err.println("Could not read file: " + fileName);
+        }
+    }
+    
+    protected void openOutput() {
+        try {
+            this.output = new FileOutputStream(fileName);
+        } catch (IOException e) {
+            System.err.println("Could not open file for writing: " + fileName);
+        }
+    }
+    
+    protected void write(byte[] data) {
+        try {
+            if (output != null) output.write(data);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 
     protected Host(int port, int maxTransmitUnits, int slidingWindowSize, String fileName) {
@@ -91,7 +118,20 @@ public abstract class Host {
         Packet result = new Packet(datagram.getData());
         this.remoteIP = datagram.getAddress();
         this.remotePort = datagram.getPort();
-        this.acknowledgment = result.getSequenceNumber() + result.getLength() + 1; // TODO: Use buffer
+        this.acknowledgment = result.getSequenceNumber() + result.getLength(); // TODO: Use buffer
         return result;
     }
+
+
+    public void log(String action, Packet p) {
+        String flags = (p.isSYN() ? "S" : "-") +
+                       (p.isFIN() ? "F" : "-") +
+                       (p.isACK() ? "A" : "-") +
+                       ((p.getLength() > 0) ? "D" : "-");
+        double now = System.nanoTime() / 1_000_000_000.0;
+        int len = p.getLength();
+        System.out.printf("%s %.3f %s %d %d %d\n", action, now, flags,
+                          p.getSequenceNumber(), len, p.getAcknowledgment());
+    }
+    
 }
