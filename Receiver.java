@@ -18,33 +18,28 @@ public class Receiver extends Host {
         while (true) {
             try {
                 Packet packet = this.receive(this.maxTransmitUnits + Packet.HEADER_SIZE);
+                this.log("rcv", packet);
     
-                // End on FIN
+                // End on FIN but only after processing all data
                 if (packet.isFIN()) {
                     this.send(ack());
                     this.setConnected(false);
                     break;
                 }
     
-                // Check checksum
                 if (!packet.isValidChecksum()) {
                     badChecksumCount++;
                     continue;
                 }
     
-                // Out-of-order packet (store in buffer)
                 if (packet.getSequenceNumber() > expectedSeq) {
                     buffer.put(packet.getSequenceNumber(), packet);
                     outOfOrderCount++;
-                }
-    
-                // In-order packet
-                else if (packet.getSequenceNumber() == expectedSeq) {
+                } else if (packet.getSequenceNumber() == expectedSeq) {
                     this.write(packet.getData());
                     bytesReceived += packet.getLength();
                     expectedSeq += packet.getLength();
     
-                    // Try to flush any buffered packets now in order
                     while (buffer.containsKey(expectedSeq)) {
                         Packet next = buffer.remove(expectedSeq);
                         this.write(next.getData());
@@ -53,12 +48,17 @@ public class Receiver extends Host {
                     }
                 }
     
-                // ACK everything up to expectedSeq
                 this.send(new Packet(0, expectedSeq, packet.getTimestamp(), 0, false, false, true, null));
     
             } catch (Exception e) {
                 e.printStackTrace();
             }
+        }
+    
+        try {
+            if (this.output != null) this.output.close();
+        } catch (IOException e) {
+            e.printStackTrace();
         }
     
         printStats();
@@ -87,6 +87,7 @@ public class Receiver extends Host {
         }
 
         this.setConnected(true);
+        this.openOutput();
         return true;
     }
 
