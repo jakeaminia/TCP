@@ -14,8 +14,13 @@ public class TCPend {
         } else if (checkReceiverArgs(args)) {
 
             Receiver receiver = new Receiver(Integer.parseInt(args[1]), Integer.parseInt(args[3]),
-                    Integer.parseInt(args[5]), args[7]);
-            receiver.listen();
+            Integer.parseInt(args[5]), args[7]);
+
+            if (receiver.connect()) {
+                receiver.listen();
+            } else {
+                System.err.println("Receiver failed to connect.");
+            }
 
         } else {
             System.err.println("Improper argument format.");
