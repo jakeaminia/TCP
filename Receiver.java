@@ -21,6 +21,11 @@ public class Receiver extends Host {
                 Packet packet = this.receive(this.maxTransmitUnits + Packet.HEADER_SIZE);
                 this.log("rcv", packet);
 
+                if (!packet.isValidChecksum()) {
+                    badChecksumCount++;
+                    continue;
+                }
+
                 System.out.println("Received packet with seq=" + packet.getSequenceNumber() +
                                 ", ack=" + packet.getAcknowledgment() +
                                 ", FIN=" + packet.isFIN());
@@ -47,10 +52,6 @@ public class Receiver extends Host {
                     break;
                 }
     
-                if (!packet.isValidChecksum()) {
-                    badChecksumCount++;
-                    continue;
-                }
     
                 if (packet.getSequenceNumber() > expectedSeq) {
                     buffer.put(packet.getSequenceNumber(), packet);
