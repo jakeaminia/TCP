@@ -69,7 +69,7 @@ public abstract class Host {
     
     protected void openOutput() {
         try {
-            this.output = new FileOutputStream(fileName);
+            this.output = new FileOutputStream(this.fileName);
         } catch (IOException e) {
             System.err.println("Could not open file for writing: " + fileName);
         }
@@ -77,7 +77,9 @@ public abstract class Host {
     
     protected void write(byte[] data) {
         try {
-            if (output != null) output.write(data);
+            if (this.output != null && data != null) {
+                this.output.write(data);
+            }
         } catch (IOException e) {
             e.printStackTrace();
         }
