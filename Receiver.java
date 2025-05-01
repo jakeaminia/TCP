@@ -21,9 +21,6 @@ public class Receiver extends Host {
                 Packet packet = this.receive(this.maxTransmitUnits + Packet.HEADER_SIZE);
                 this.log("rcv", packet);
 
-                System.out.println("Waiting to receive packet...");
-                Packet packet = this.receive(this.maxTransmitUnits + Packet.HEADER_SIZE);
-                this.log("rcv", packet);
                 System.out.println("Received packet with seq=" + packet.getSequenceNumber() +
                                 ", ack=" + packet.getAcknowledgment() +
                                 ", FIN=" + packet.isFIN());
