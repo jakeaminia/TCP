@@ -5,7 +5,7 @@ import java.io.IOException;
 
 public class Receiver extends Host {
 
-    private int expectedSeq = 1;
+    private int expectedSeq = 0;
     private int bytesReceived = 0;
     private int outOfOrderCount = 0;
     private int badChecksumCount = 0;
