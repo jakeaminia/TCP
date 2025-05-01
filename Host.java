@@ -68,7 +68,7 @@ public abstract class Host {
     }
     
     protected void openOutput() {
-        System.out.println("Opening output file: " + fileName);
+        System.out.println("Opening output file: " + this.fileName);
         try {
             this.output = new FileOutputStream(this.fileName);
         } catch (IOException e) {

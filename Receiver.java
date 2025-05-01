@@ -106,13 +106,14 @@ public class Receiver extends Host {
             // Wait for ACK 1
             this.receive(Packet.HEADER_SIZE);
 
+            this.openOutput();
+
         } catch (Exception e) {
             e.printStackTrace();
             return false;
         }
 
         this.setConnected(true);
-        this.openOutput();
         return true;
     }
 
