@@ -78,20 +78,22 @@ public abstract class Host {
     
     protected void write(byte[] data) {
         if (data == null) {
-            System.err.println("Data is null, cannot write to file.");
+            System.err.println("write(): Data is null");
             return;
         }
         if (data.length == 0) {
-            System.err.println("Data length is zero, nothing to write.");
+            System.err.println("write(): Data length is zero");
             return;
         }
         try {
-            if (this.output != null && data != null) {
+            System.out.println("write(): Actually writing " + data.length + " bytes");
+            if (this.output != null) {
                 this.output.write(data);
-                this.output.flush();
-                System.out.println("Wrote " + data.length + " bytes to file.");
+            } else {
+                System.err.println("write(): Output stream is null");
             }
         } catch (IOException e) {
+            System.err.println("write(): Exception during write");
             e.printStackTrace();
         }
     }

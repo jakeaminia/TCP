@@ -61,7 +61,9 @@ public class Receiver extends Host {
                     buffer.put(packet.getSequenceNumber(), packet);
                     outOfOrderCount++;
                 } else if (packet.getSequenceNumber() == expectedSeq) {
+                    System.out.println("Attempting to write data of length: " + packet.getLength());
                     this.write(packet.getData());
+                    System.out.println("Write completed");
                     bytesReceived += packet.getLength();
                     expectedSeq += packet.getLength();
     
