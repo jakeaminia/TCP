@@ -140,7 +140,7 @@ public abstract class Host {
         Packet result = new Packet(datagram.getData());
         this.remoteIP = datagram.getAddress();
         this.remotePort = datagram.getPort();
-        this.acknowledgment = result.getSequenceNumber() + result.getLength(); // TODO: Use buffer
+        this.acknowledgment = result.getSequenceNumber() + result.getLength() + 1; // TODO: Use buffer
         return result;
     }
 
