@@ -2,9 +2,14 @@ public class TCPend {
     public static void main(String[] args) {
         if (checkSenderArgs(args)) {
 
-            Sender sender = new Sender(Integer.parseInt(args[1]), args[3], Integer.parseInt(args[5]), args[7],
-                    Integer.parseInt(args[9]), Integer.parseInt(args[11]));
+        Sender sender = new Sender(Integer.parseInt(args[1]), args[3], Integer.parseInt(args[5]), args[7],
+            Integer.parseInt(args[9]), Integer.parseInt(args[11]));
+
+        if (sender.connect()) {
             sender.run();
+        } else {
+            System.err.println("Connection failed.");
+        }
 
         } else if (checkReceiverArgs(args)) {
 
