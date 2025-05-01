@@ -86,7 +86,7 @@ public abstract class Host {
             return;
         }
         try {
-            System.out.println("write(): Actually writing " + data.length + " bytes");
+            // System.out.println("write(): Actually writing " + data.length + " bytes");
             if (this.output != null) {
                 this.output.write(data);
             } else {
