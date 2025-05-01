@@ -106,7 +106,7 @@ public class Packet {
             flagsEncoded |= 0b001;
         buffer.putInt(flagsEncoded);
 
-        buffer.putInt(0); // blank checksum field before calculation
+        buffer.putInt(0); 
 
         if (this.data != null) {
             buffer.put(this.data);

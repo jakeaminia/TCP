@@ -19,7 +19,7 @@ public class Sender extends Host {
     }
 
     public void run() {
-        this.loadFile(); // Load input file to byte array
+        this.loadFile(); 
 
         int fileLen = file.length;
         int baseSeq = 0;
@@ -44,7 +44,6 @@ public class Sender extends Host {
         try {
             while (baseSeq < fileLen || !unacked.isEmpty()) {
 
-                // Send while inside sliding window
                 while (nextSeq < fileLen && (nextSeq - baseSeq) / mtu < slidingWindowSize) {
                     int chunkSize = Math.min(mtu, fileLen - nextSeq);
                     byte[] chunk = Arrays.copyOfRange(file, nextSeq, nextSeq + chunkSize);
@@ -74,12 +73,10 @@ public class Sender extends Host {
                     bytesSent += chunkSize;
                 }
 
-                // Wait for ACK
                 Packet ackPkt = this.receive(Packet.HEADER_SIZE);
                 this.log("rcv", ackPkt);
                 int ackNum = ackPkt.getAcknowledgment();
 
-                // RTT estimate if new ACK
                 if (ackNum > lastAck) {
                     long sampleRTT = System.nanoTime() - ackPkt.getTimestamp();
                     long diff = Math.abs(sampleRTT - estimatedRTT);
@@ -90,7 +87,6 @@ public class Sender extends Host {
                     lastAck = ackNum;
                     dupAckCount = 0;
 
-                    // Remove acked packets
                     Iterator<Integer> it = unacked.keySet().iterator();
                     while (it.hasNext()) {
                         int seq = it.next();
@@ -131,11 +127,6 @@ public class Sender extends Host {
         }
     }
 
-    /**
-     * Conducts the sender side of the TCP 3-way handshake
-     * 
-     * @return Success of connection
-     */
     public boolean connect() {
         if (this.isConnected()) {
             return true;
@@ -145,13 +136,10 @@ public class Sender extends Host {
 
             this.socket.connect(this.remoteIP, this.remotePort);
 
-            // Send SYN 0
             this.socket.send(new DatagramPacket(syn().toBytes(), Packet.HEADER_SIZE, this.remoteIP, this.remotePort));
 
-            // Wait for ACK 1, SYN 0
             this.receive(Packet.HEADER_SIZE);
 
-            // Send ACK 1
             this.socket.send(new DatagramPacket(ack().toBytes(), Packet.HEADER_SIZE, this.remoteIP, this.remotePort));
 
         } catch (Exception e) {
@@ -172,7 +160,6 @@ public class Sender extends Host {
         try {
             // System.out.println("Sender: Sending FIN...");
     
-            // Step 1: Build and send FIN properly
             Packet finPkt = fin();
             byte[] finBytes = finPkt.toBytes();
     
@@ -191,12 +178,10 @@ public class Sender extends Host {
             Packet ackPkt = this.receive(Packet.HEADER_SIZE + 100);  // buffer extra in case of larger packets
             this.log("rcv", ackPkt);
     
-            // Step 3: Wait for FIN from receiver
             // System.out.println("Sender: Waiting for FIN from receiver...");
             Packet theirFin = this.receive(Packet.HEADER_SIZE + 100);
             this.log("rcv", theirFin);
     
-            // Step 4: Send final ACK
             // System.out.println("Sender: Sending final ACK...");
             Packet finalAck = ack();
             this.send(finalAck);

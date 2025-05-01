@@ -112,7 +112,7 @@ public abstract class Host {
             e.printStackTrace();
         }
 
-    }
+    } 
 
     public Packet syn() {
         Packet packet = new Packet(this.sequenceNumber, this.acknowledgment, System.nanoTime(), 0, true, false,

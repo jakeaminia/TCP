@@ -42,18 +42,11 @@ public class Receiver extends Host {
                 if (packet.isFIN()) {
                     // System.out.println("Receiver: Received FIN.");
     
-                    // Step 1: ACK the FIN from sender
                     this.send(ack());
-    
-                    // Step 2: Send our own FIN to sender
                     Packet ourFin = fin();
-                    this.send(ourFin);
-    
-                    // Step 3: Wait for final ACK from sender
+                    this.send(ourFin);    
                     Packet finalAck = this.receive(Packet.HEADER_SIZE);
                     this.log("rcv", finalAck);
-    
-                    // Step 4: Clean up and break
                     this.socket.disconnect();
                     this.setConnected(false);
                     // System.out.println("Receiver: Connection closed.");
@@ -100,15 +93,12 @@ public class Receiver extends Host {
         }
         // System.out.println("Receiver.connect(): fileName = '" + this.fileName + "'");
         try {
-            // Wait for SYN 0
             this.receive(Packet.HEADER_SIZE);
 
             this.socket.connect(this.remoteIP, this.remotePort);
 
-            // Send SYN 0 ACK 1
             this.socket.send(new DatagramPacket(syn().toBytes(), Packet.HEADER_SIZE, this.remoteIP, this.remotePort));
 
-            // Wait for ACK 1
             this.receive(Packet.HEADER_SIZE);
 
             this.openOutput();
@@ -122,34 +112,6 @@ public class Receiver extends Host {
         return true;
     }
 
-    // public boolean disconnect() {
-    //     if (this.isConnected()) {
-    //         return true;
-    //     }
-
-    //     try {
-    //         // Wait for FIN
-    //         this.receive(Packet.HEADER_SIZE);
-
-    //         // Send ACK
-    //         this.socket.send(new DatagramPacket(ack().toBytes(), Packet.HEADER_SIZE, this.remoteIP, this.remotePort));
-
-    //         // Send FIN
-    //         this.socket.send(new DatagramPacket(fin().toBytes(), Packet.HEADER_SIZE, this.remoteIP, this.remotePort));
-
-    //         // Wait for ACK
-    //         this.receive(Packet.HEADER_SIZE);
-
-    //         // Disconnect
-    //         this.socket.disconnect();
-    //         this.setConnected(false);
-    //         return true;
-
-    //     } catch (Exception e) {
-    //         e.printStackTrace();
-    //         return false;
-    //     }
-    // }
 
     private void printStats() {
         System.out.println("Data received: " + bytesReceived + " bytes");

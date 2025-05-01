@@ -35,6 +35,6 @@ public class TCPend {
     public static boolean checkReceiverArgs(String[] args) {
         return args.length == 8 && args[0].equals("-p") && args[2].equals("-m") && args[4].equals("-c")
                 && args[6].equals("-f");
-    };
+    }; 
 
 }
