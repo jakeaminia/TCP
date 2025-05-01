@@ -88,6 +88,8 @@ public abstract class Host {
         try {
             if (this.output != null && data != null) {
                 this.output.write(data);
+                this.output.flush();
+                System.out.println("Wrote " + data.length + " bytes to file.");
             }
         } catch (IOException e) {
             e.printStackTrace();
