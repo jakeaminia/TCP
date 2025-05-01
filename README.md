@@ -1,1 +1,2 @@
-This project implements TCP in Java.
+Max Mitchell: mmitchell  
+Jake Aminia: aminia
