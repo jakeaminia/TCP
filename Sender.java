@@ -39,7 +39,7 @@ public class Sender extends Host {
         int bytesSent = 0;
         int retransmits = 0;
         int dupAcks = 0;
-        int packetsSent = 0
+        int packetsSent = 0;
 
         try {
             while (baseSeq < fileLen || !unacked.isEmpty()) {
