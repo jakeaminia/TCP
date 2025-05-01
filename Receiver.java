@@ -93,7 +93,7 @@ public class Receiver extends Host {
         if (this.isConnected()) {
             return true;
         }
-
+        System.out.println("Receiver.connect(): fileName = '" + this.fileName + "'");
         try {
             // Wait for SYN 0
             this.receive(Packet.HEADER_SIZE);
