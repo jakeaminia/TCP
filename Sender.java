@@ -39,6 +39,7 @@ public class Sender extends Host {
         int bytesSent = 0;
         int retransmits = 0;
         int dupAcks = 0;
+        int packetsSent = 0
 
         try {
             while (baseSeq < fileLen || !unacked.isEmpty()) {
@@ -51,13 +52,14 @@ public class Sender extends Host {
                     Packet pkt = new Packet(nextSeq, 0, System.nanoTime(), chunkSize, false, false, true, chunk);
                     this.send(pkt);
                     this.log("snd", pkt);
+                    packetsSent++;
 
                     unacked.put(pkt.getSequenceNumber(), pkt);
 
                     int seq = pkt.getSequenceNumber();
                     ScheduledFuture<?> task = scheduler.schedule(() -> {
                         try {
-                            System.out.println("Timeout: retransmitting seq " + seq);
+                            // System.out.println("Timeout: retransmitting seq " + seq);
                             this.send(pkt);
                             this.log("snd", pkt);
                         } catch (IOException e) {
@@ -105,7 +107,7 @@ public class Sender extends Host {
                 } else if (ackNum == lastAck) {
                     dupAckCount++;
                     if (dupAckCount == 3 && unacked.containsKey(ackNum)) {
-                        System.out.println("Fast retransmit for seq " + ackNum);
+                        // System.out.println("Fast retransmit for seq " + ackNum);
                         this.send(unacked.get(ackNum));
                         this.log("snd", unacked.get(ackNum));
                         retransmits++;
@@ -116,8 +118,8 @@ public class Sender extends Host {
             }
 
             scheduler.shutdownNow();
-            System.out.println("File transfer complete.");
-            System.out.println("Total bytes sent: " + bytesSent);
+            System.out.println("Data sent: " + bytesSent + " bytes");
+            System.out.println("Packets sent: " + packetsSent);
             System.out.println("Retransmissions: " + retransmits);
             System.out.println("Duplicate ACKs: " + dupAcks);
 
@@ -168,34 +170,34 @@ public class Sender extends Host {
         }
     
         try {
-            System.out.println("Sender: Sending FIN...");
+            // System.out.println("Sender: Sending FIN...");
     
             // Step 1: Build and send FIN properly
             Packet finPkt = fin();
             byte[] finBytes = finPkt.toBytes();
     
             // Debug log for FIN content
-            System.out.println("FIN packet flags => FIN=" + finPkt.isFIN() +
-                               ", SYN=" + finPkt.isSYN() +
-                               ", ACK=" + finPkt.isACK() +
-                               ", len=" + finPkt.getLength());
+            // System.out.println("FIN packet flags => FIN=" + finPkt.isFIN() +
+            //                    ", SYN=" + finPkt.isSYN() +
+            //                    ", ACK=" + finPkt.isACK() +
+            //                    ", len=" + finPkt.getLength());
     
             DatagramPacket dp = new DatagramPacket(finBytes, finBytes.length, this.remoteIP, this.remotePort);
             this.socket.send(dp);
             this.log("snd", finPkt);  // log the sent FIN
     
             // Step 2: Wait for ACK
-            System.out.println("Sender: Waiting for ACK...");
+            // System.out.println("Sender: Waiting for ACK...");
             Packet ackPkt = this.receive(Packet.HEADER_SIZE + 100);  // buffer extra in case of larger packets
             this.log("rcv", ackPkt);
     
             // Step 3: Wait for FIN from receiver
-            System.out.println("Sender: Waiting for FIN from receiver...");
+            // System.out.println("Sender: Waiting for FIN from receiver...");
             Packet theirFin = this.receive(Packet.HEADER_SIZE + 100);
             this.log("rcv", theirFin);
     
             // Step 4: Send final ACK
-            System.out.println("Sender: Sending final ACK...");
+            // System.out.println("Sender: Sending final ACK...");
             Packet finalAck = ack();
             this.send(finalAck);
             this.log("snd", finalAck);

@@ -9,6 +9,7 @@ public class Receiver extends Host {
     private int bytesReceived = 0;
     private int outOfOrderCount = 0;
     private int badChecksumCount = 0;
+    private int packetsReceived = 0;
     private Map<Integer, Packet> buffer = new TreeMap<>();
 
     public Receiver(int port, int maxTransmitUnits, int slidingWindowSize, String fileName) {
@@ -25,19 +26,21 @@ public class Receiver extends Host {
                     badChecksumCount++;
                     continue;
                 }
+
+                packetsReceived++;
     
-                System.out.println("RCV_RAW: seq=" + packet.getSequenceNumber() +
-                                   " ack=" + packet.getAcknowledgment() +
-                                   " FIN=" + packet.isFIN() + " SYN=" + packet.isSYN() +
-                                   " ACK=" + packet.isACK() + " len=" + packet.getLength());
+                // System.out.println("RCV_RAW: seq=" + packet.getSequenceNumber() +
+                //                    " ack=" + packet.getAcknowledgment() +
+                //                    " FIN=" + packet.isFIN() + " SYN=" + packet.isSYN() +
+                //                    " ACK=" + packet.isACK() + " len=" + packet.getLength());
     
-                System.out.println("Received packet with seq=" + packet.getSequenceNumber() +
-                                   ", ack=" + packet.getAcknowledgment() +
-                                   ", FIN=" + packet.isFIN());
+                // System.out.println("Received packet with seq=" + packet.getSequenceNumber() +
+                //                    ", ack=" + packet.getAcknowledgment() +
+                //                    ", FIN=" + packet.isFIN());
     
                 // End on FIN but only after processing all data
                 if (packet.isFIN()) {
-                    System.out.println("Receiver: Received FIN.");
+                    // System.out.println("Receiver: Received FIN.");
     
                     // Step 1: ACK the FIN from sender
                     this.send(ack());
@@ -53,7 +56,7 @@ public class Receiver extends Host {
                     // Step 4: Clean up and break
                     this.socket.disconnect();
                     this.setConnected(false);
-                    System.out.println("Receiver: Connection closed.");
+                    // System.out.println("Receiver: Connection closed.");
                     break;
                 }
     
@@ -61,9 +64,9 @@ public class Receiver extends Host {
                     buffer.put(packet.getSequenceNumber(), packet);
                     outOfOrderCount++;
                 } else if (packet.getSequenceNumber() == expectedSeq) {
-                    System.out.println("Attempting to write data of length: " + packet.getLength());
+                    // System.out.println("Attempting to write data of length: " + packet.getLength());
                     this.write(packet.getData());
-                    System.out.println("Write completed");
+                    // System.out.println("Write completed");
                     bytesReceived += packet.getLength();
                     expectedSeq += packet.getLength();
     
@@ -95,7 +98,7 @@ public class Receiver extends Host {
         if (this.isConnected()) {
             return true;
         }
-        System.out.println("Receiver.connect(): fileName = '" + this.fileName + "'");
+        // System.out.println("Receiver.connect(): fileName = '" + this.fileName + "'");
         try {
             // Wait for SYN 0
             this.receive(Packet.HEADER_SIZE);
@@ -150,6 +153,7 @@ public class Receiver extends Host {
 
     private void printStats() {
         System.out.println("Data received: " + bytesReceived + " bytes");
+        System.out.println("Packets received: " + packetsReceived);
         System.out.println("Out-of-order packets discarded: " + outOfOrderCount);
         System.out.println("Packets with bad checksum: " + badChecksumCount);
     }
