@@ -20,38 +20,42 @@ public class Receiver extends Host {
             try {
                 Packet packet = this.receive(this.maxTransmitUnits + Packet.HEADER_SIZE);
                 this.log("rcv", packet);
-
+    
                 if (!packet.isValidChecksum()) {
                     badChecksumCount++;
                     continue;
                 }
-
+    
+                System.out.println("RCV_RAW: seq=" + packet.getSequenceNumber() +
+                                   " ack=" + packet.getAcknowledgment() +
+                                   " FIN=" + packet.isFIN() + " SYN=" + packet.isSYN() +
+                                   " ACK=" + packet.isACK() + " len=" + packet.getLength());
+    
                 System.out.println("Received packet with seq=" + packet.getSequenceNumber() +
-                                ", ack=" + packet.getAcknowledgment() +
-                                ", FIN=" + packet.isFIN());
-                    
+                                   ", ack=" + packet.getAcknowledgment() +
+                                   ", FIN=" + packet.isFIN());
+    
                 // End on FIN but only after processing all data
                 if (packet.isFIN()) {
                     System.out.println("Receiver: Received FIN.");
-                    
+    
                     // Step 1: ACK the FIN from sender
                     this.send(ack());
-                    
+    
                     // Step 2: Send our own FIN to sender
                     Packet ourFin = fin();
                     this.send(ourFin);
-                    
+    
                     // Step 3: Wait for final ACK from sender
                     Packet finalAck = this.receive(Packet.HEADER_SIZE);
                     this.log("rcv", finalAck);
-                    
+    
                     // Step 4: Clean up and break
                     this.socket.disconnect();
                     this.setConnected(false);
                     System.out.println("Receiver: Connection closed.");
                     break;
                 }
-    
     
                 if (packet.getSequenceNumber() > expectedSeq) {
                     buffer.put(packet.getSequenceNumber(), packet);

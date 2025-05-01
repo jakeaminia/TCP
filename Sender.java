@@ -173,21 +173,32 @@ public class Sender extends Host {
             // Step 1: Build and send FIN properly
             Packet finPkt = fin();
             byte[] finBytes = finPkt.toBytes();
+    
+            // Debug log for FIN content
+            System.out.println("FIN packet flags => FIN=" + finPkt.isFIN() +
+                               ", SYN=" + finPkt.isSYN() +
+                               ", ACK=" + finPkt.isACK() +
+                               ", len=" + finPkt.getLength());
+    
             DatagramPacket dp = new DatagramPacket(finBytes, finBytes.length, this.remoteIP, this.remotePort);
             this.socket.send(dp);
             this.log("snd", finPkt);  // log the sent FIN
     
             // Step 2: Wait for ACK
-            Packet ackPkt = this.receive(Packet.HEADER_SIZE + 100);  // 100 extra in case it's padded
+            System.out.println("Sender: Waiting for ACK...");
+            Packet ackPkt = this.receive(Packet.HEADER_SIZE + 100);  // buffer extra in case of larger packets
             this.log("rcv", ackPkt);
     
             // Step 3: Wait for FIN from receiver
+            System.out.println("Sender: Waiting for FIN from receiver...");
             Packet theirFin = this.receive(Packet.HEADER_SIZE + 100);
             this.log("rcv", theirFin);
     
             // Step 4: Send final ACK
-            this.send(ack());
-            this.log("snd", ack());
+            System.out.println("Sender: Sending final ACK...");
+            Packet finalAck = ack();
+            this.send(finalAck);
+            this.log("snd", finalAck);
     
             this.socket.disconnect();
             this.setConnected(false);
