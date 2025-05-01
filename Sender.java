@@ -22,8 +22,8 @@ public class Sender extends Host {
         this.loadFile(); // Load input file to byte array
 
         int fileLen = file.length;
-        int baseSeq = 1;
-        int nextSeq = 1;
+        int baseSeq = 0;
+        int nextSeq = 0;
         int mtu = maxTransmitUnits;
 
         long estimatedRTT = 5_000_000_000L;
