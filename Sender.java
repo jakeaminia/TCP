@@ -121,6 +121,8 @@ public class Sender extends Host {
             System.out.println("Retransmissions: " + retransmits);
             System.out.println("Duplicate ACKs: " + dupAcks);
 
+            this.disconnect();
+
         } catch (Exception e) {
             e.printStackTrace();
             scheduler.shutdownNow();
@@ -166,6 +168,7 @@ public class Sender extends Host {
         }
 
         try {
+            System.out.println("Sender: Sending FIN...");
             // Send FIN
             this.socket.send(new DatagramPacket(fin().toBytes(), Packet.HEADER_SIZE, this.remoteIP, this.remotePort));
 
