@@ -68,6 +68,7 @@ public abstract class Host {
     }
     
     protected void openOutput() {
+        System.out.println("Opening output file: " + fileName);
         try {
             this.output = new FileOutputStream(this.fileName);
         } catch (IOException e) {
@@ -76,6 +77,14 @@ public abstract class Host {
     }
     
     protected void write(byte[] data) {
+        if (data == null) {
+            System.err.println("Data is null, cannot write to file.");
+            return;
+        }
+        if (data.length == 0) {
+            System.err.println("Data length is zero, nothing to write.");
+            return;
+        }
         try {
             if (this.output != null && data != null) {
                 this.output.write(data);
